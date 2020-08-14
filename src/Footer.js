@@ -27,7 +27,7 @@ function Footer({ spotify }) {
 
             dispatch({
                 type: 'SET_ITEM',
-                item: res
+                item: res.item
             })
 
         })
