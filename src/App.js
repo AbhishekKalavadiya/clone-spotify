@@ -1,18 +1,17 @@
 import React, {useEffect} from 'react'
 import Login from './Login'
 import Player from './Player'
-
 import { getTokenFromUrl } from './spotify';
 import SpotifyWebApi from 'spotify-web-api-js'
 import { StateProviderValue } from './StateProvider'
 
 import './App.css';
 
-const spotify = new SpotifyWebApi()
+const spoti = new SpotifyWebApi()
 
 function App() {
 
-	const [{ token }, dispatch] = StateProviderValue()
+	const [{ token, spotify }, dispatch] = StateProviderValue()
 		
 	useEffect(() => {
 		const hash = getTokenFromUrl();
@@ -26,28 +25,51 @@ function App() {
 				token: _token
 			})
 			
-			spotify.setAccessToken(_token)
-			spotify.getMe().then((user)=>{
+			spoti.setAccessToken(_token)
+			spoti.getMe().then((user)=>{
 				dispatch({
 					type: 'SET_USER',
 					user: user
 				})
 			})
 
-			spotify.getUserPlaylists().then((playlists) => {
+			dispatch({
+				type: "SET_SPOTIFY",
+				spotify: spoti,
+			  });
+
+			spoti.getMyTopArtists().then((response) => 
+				dispatch({
+					type: 'SET_TOP_ARTISTS',
+					top_artists: response	
+				})
+			)
+
+			spoti.getUserPlaylists().then((playlists) => {
 				dispatch({
 					type: 'SET_PLAYLISTS',
 					playlists: playlists
 				})
 			})
+			
+			spoti.getPlaylist('030F0XnVbqDZ3ai1Can9U2').then(response => (
+				dispatch({
+					type: 'SET_DISCOVER_WEEKLY',
+					discover_weekly: response,
+				})
+			))
+
 		}
-	}, [])
+	}, [token, dispatch])
+
+	console.log(spotify)
+
 
 	return (
 		<div className="app">
 			{
 				token 
-					?<Player spotify={spotify} /> 
+					?<Player  spotify={spoti} /> 
 					:<Login />
 			}
 		</div>
